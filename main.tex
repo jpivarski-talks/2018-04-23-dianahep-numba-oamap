@@ -91,6 +91,27 @@ OAMap translates between OOP objects and low-level, read-only arrays:
 \uncover<3->{In particular, Python is a high-level language that physicists already use, and Numba provides optimized compilation through LLVM.}
 \end{frame}
 
+\begin{frame}{Performance tests {\it preceded} design}
+\vspace{0.3 cm}
+I wanted to make sure that committing to a library (Numba) did not give away performance from the start. Observed no loss in throughput compared to pure C.
+
+\vspace{0.3 cm}
+\begin{columns}[t]
+\column{0.5\linewidth}
+Single-threaded rates of millions of events per second, limited only by trig functions.
+
+\begin{center}
+\includegraphics[height=5 cm]{physical-media.pdf}
+\end{center}
+\column{0.43\linewidth}
+Multi-threaded scaling limited only by memory bus bandwidth.
+
+\vspace{-\baselineskip}
+\begin{center}
+\includegraphics[height=5 cm]{knl-scaling.pdf}
+\end{center}
+\end{columns}
+\end{frame}
 
 
 
