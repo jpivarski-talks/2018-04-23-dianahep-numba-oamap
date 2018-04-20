@@ -93,9 +93,9 @@ OAMap translates between OOP objects and low-level, read-only arrays:
 
 \begin{frame}{Performance tests {\it preceded} design}
 \vspace{0.3 cm}
-I wanted to make sure that committing to a library (Numba) did not give away performance from the start. Observed no loss in throughput compared to pure C.
+I wanted to make sure that committing to a library (Numba) did not give away performance from the start. I observed no loss in throughput compared to pure C.
 
-\vspace{0.3 cm}
+\vspace{0.2 cm}
 \begin{columns}[t]
 \column{0.5\linewidth}
 Single-threaded rates of millions of events per second, limited only by trig functions.
@@ -113,6 +113,45 @@ Multi-threaded scaling limited only by physical memory bus bandwidth.
 \end{columns}
 \end{frame}
 
+\begin{frame}{}
+\vspace{0.75 cm}\large
+
+\begin{block}{\LARGE Moral:}
+\vspace{0.75 cm}
+If we can deliver arrays to main memory and the CPU cache quickly enough,
+
+\vspace{0.35 cm}
+and physicists' analyses can be expressed as array operations on sequential data,
+
+\vspace{0.35 cm}
+then it can be compiled to run at this scale.
+\end{block}
+
+\vspace{0.5 cm}
+\begin{center}
+\uncover<2->{\textcolor{darkorange}{\Large It's a problem of expressing OOP concepts in arrays.}}
+\end{center}
+\end{frame}
+
+\begin{frame}{``General enough'' data types}
+\vspace{0.35 cm}
+\begin{enumerate}
+\item \textcolor{darkblue}{\large Primitives:} \uncover<2->{any fixed-width data, such as numbers.}
+
+\item \textcolor{darkblue}{\large Lists:} \uncover<3->{arbitrary-length collections of data with a given type (homogeneous).}
+
+\item \textcolor{darkblue}{\large Unions:} \uncover<4->{set of possible types for heterogeneity (e.g.\ list of ``electrons {\it or} muons'').}
+
+\item \textcolor{darkblue}{\large Records:} \uncover<5->{objects containing a set of typed fields (a.k.a.\ classes or structs).}
+
+\item \textcolor{darkblue}{\large Tuples:} \uncover<6->{fixed-length collections of arbitrary-typed fields (like records with index positions instead of field names).}
+
+\item \textcolor{darkblue}{\large Pointers:} \uncover<7->{objects identified by position in another field. Intended for linking relationships among particles, but also useful for expressing skimmed data as event lists, making non-tree data structures, emulating Arrow/Parquet's ``dictionary encoding'' of categorical strings\ldots}
+\end{enumerate}
+
+\vspace{0.2 cm}
+The data types and their representations have \textcolor{darkblue}{compositional symmetry:} any type can be plugged into any other type and the array representations follow suit.
+\end{frame}
 
 
 \end{document}
