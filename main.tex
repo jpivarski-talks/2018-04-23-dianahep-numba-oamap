@@ -187,21 +187,21 @@ OAMap transformation rules deliberately resemble those of ROOT and Arrow, so tha
 \begin{columns}[t]
 \column{0.46\linewidth}
 \begin{center}
-\large \underline{But unlike ROOT,}
+\large \underline{But unlike ROOT,}\mbox{\hspace{0.5 cm}}
 \end{center}
 
 OAMap performs calculations on columns in memory. ROOT {\it stores} data in columns (TBranches of TBaskets).
 
 \column{0.46\linewidth}
 \begin{center}
-\large \underline{But unlike Arrow,}
+\large \underline{But unlike Arrow,}\mbox{\hspace{0.5 cm}}
 \end{center}
 
-OAMap performs arbitrary functions (even procedural) on object-like data, rather than a data-frame model.
+OAMap performs arbitrary functions (even procedural code) on object-like data, rather than a data-frame model.
 \end{columns}
 
 \vspace{0.7 cm}
-Unlike both, OAMap's focus is on calculation. Any software that provides arrays in the right format may be used as sources.
+Unlike both, OAMap focuses only on {\it calculation.} Any software that provides arrays in the right format may be used as sources.
 \end{frame}
 
 \begin{frame}[fragile]{Example of ROOT data as an OAMap schema}
