@@ -57,7 +57,7 @@
 Numba provides a smooth transition between high-level tinkering in Python and high-throughput processing, and we've seen a real-world demonstration in XENONnT.
 
 \vspace{0.8 cm}
-\textcolor{darkblue}{\Large Can we use it for LHC data?}
+\textcolor{darkblue}{\Large Can we use it for the LHC?}
 
 \vspace{0.2 cm}
 \begin{itemize}
@@ -79,9 +79,9 @@ OAMap translates between OOP objects and low-level, read-only arrays:
 
 \vspace{0.2 cm}
 \begin{itemize}
-\item[$\rightarrow$] Physicists write arbitrary code on OOP-style objects.
+\item[$\rightarrow$] Physicists write arbitrary code, assuming OOP-style objects.
 \item[$\rightarrow$] Actual data are stored in arrays (e.g.~TBaskets), never deserialized into objects.
-\item[$\rightarrow$] Physicist's function is translated into operations on arrays, not any intermediaries.
+\item[$\rightarrow$] Physicist's function is translated into operations on arrays.
 \end{itemize}
 
 \vspace{0.2 cm}
@@ -98,7 +98,7 @@ I wanted to make sure that committing to a library (Numba) did not give away per
 \vspace{0.2 cm}
 \begin{columns}[t]
 \column{0.5\linewidth}
-Single-threaded rates of millions of events per second, limited only by trig functions.
+Single-threaded rates of millions of events per second, limited only by trig functions!
 
 \begin{center}
 \includegraphics[height=5 cm]{physical-media.pdf}
@@ -113,23 +113,24 @@ Multi-threaded scaling limited only by physical memory bus bandwidth.
 \end{columns}
 \end{frame}
 
-\begin{frame}{}
+\begin{frame}{Moral}
 \vspace{0.75 cm}\large
 
-\begin{block}{\LARGE Moral:}
-\vspace{0.75 cm}
 If we can deliver arrays to main memory and the CPU cache quickly enough,
 
 \vspace{0.35 cm}
-and physicists' analyses can be expressed as array operations on sequential data,
+\ldots and physicists' analyses can be expressed as array operations on \mbox{sequential data,\hspace{-1 cm}}
 
 \vspace{0.35 cm}
-then it can be compiled to run at this scale.
-\end{block}
+\ldots then it can be compiled to run at this scale.
 
 \vspace{0.5 cm}
 \begin{center}
-\uncover<2->{\textcolor{darkorange}{\Large It's a problem of expressing OOP concepts in arrays.}}
+\begin{minipage}{0.7\linewidth}
+\begin{center}
+\uncover<2->{\textcolor{darkorange}{\Large Instead of converting TBaskets into objects, let's convert OOP code into array code!}}
+\end{center}
+\end{minipage}
 \end{center}
 \end{frame}
 
@@ -144,7 +145,7 @@ then it can be compiled to run at this scale.
 
 \item \textcolor{darkblue}{\large Records:} \uncover<5->{objects containing a set of typed fields (a.k.a.\ classes or structs).}
 
-\item \textcolor{darkblue}{\large Tuples:} \uncover<6->{fixed-length collections of arbitrary-typed fields (like records with index positions instead of field names).}
+\item \textcolor{darkblue}{\large Tuples:} \uncover<6->{fixed-length collections of typed fields (like records with index positions instead of field names).}
 
 \item \textcolor{darkblue}{\large Pointers:} \uncover<7->{objects identified by position in another field. Intended for linking relationships among particles, but also useful for expressing skimmed data as event lists, making non-tree data structures, emulating Arrow/Parquet's ``dictionary encoding'' of categorical strings\ldots}
 \end{enumerate}
@@ -170,8 +171,8 @@ The data types and their representations have \textcolor{darkblue}{compositional
 \textcolor{darkblue}{\large Transformation rules:}
 \begin{itemize}
 \item Primitive data at leaves of schema are stored contiguously, with no structure.
-\item List structure encoded in a separate array; cumulative number of entries at its level of depth, written at each closing bracket.
-\item Other types have similar rules.
+\item List structure encoded in a separate ``stops'' array, computed from the cumulative number of entries at its level of depth, written at each closing bracket.
+\item Other schema types have similar rules.
 \end{itemize}
 
 \vspace{0.2 cm}
