@@ -52,9 +52,46 @@
 
 % START START START START START START START START START START START START START
 
-\begin{frame}{First slide}
+\begin{frame}{Can we use Numba for LHC data?}
 \vspace{0.5 cm}
-HERE
+Numba provides a smooth transition between high-level tinkering in Python and high-throughput processing, and we've seen a real-world demonstration in XENONnT.
+
+\vspace{0.8 cm}
+\textcolor{darkblue}{\Large Can we use it for LHC data?}
+
+\vspace{0.2 cm}
+\begin{itemize}
+\item Must access ROOT data. \uncover<2->{\textcolor{darkorange}{Solution: uproot, as well as ROOT PR\#943, PR\#1872.}}
+\item We need arbitrary length lists of particles per event, not rectangular arrays.
+\item Converting all of our events to lists of namedtuples to feed to Numba would be a serious performance hit (memory and throughput).
+
+\vspace{0.2 cm}
+\uncover<3->{\textcolor{darkorange}{Solution: object-array mapping (OAMap).}}
+\end{itemize}
 \end{frame}
+
+\begin{frame}{Object-array mapping (OAMap)}
+\vspace{0.5 cm}
+By analogy with object-relational mapping (ORM), which translates between classes in object-oriented programming (OOP) and relational tables in databases.
+
+\vspace{0.5 cm}
+OAMap translates between OOP objects and low-level, read-only arrays:
+
+\vspace{0.2 cm}
+\begin{itemize}
+\item[$\rightarrow$] Physicists write arbitrary code on OOP-style objects.
+\item[$\rightarrow$] Actual data are stored in arrays (e.g.~TBaskets), never deserialized into objects.
+\item[$\rightarrow$] Physicist's function is translated into operations on arrays, not any intermediaries.
+\end{itemize}
+
+\vspace{0.2 cm}
+\uncover<2->{\textcolor{darkblue}{This is a kind of compilation.} Last year's talks about ``Femtocode'' are this idea in a functional language, but the data representation can be handled on its own.}
+
+\vspace{0.2 cm}
+\uncover<3->{In particular, Python is a high-level language that physicists already use, and Numba provides optimized compilation through LLVM.}
+\end{frame}
+
+
+
 
 \end{document}
