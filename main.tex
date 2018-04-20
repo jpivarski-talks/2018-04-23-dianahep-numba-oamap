@@ -182,16 +182,16 @@ The data types and their representations have \textcolor{darkblue}{compositional
 \vspace{0.5 cm}
 OAMap transformation rules deliberately resemble those of ROOT and Arrow, so that both can be used as inputs to calculations. With minor modifications, both represent nested data as described on the previous page.
 
-\vspace{-0.3 cm}
+\vspace{-0.2 cm}
 \begin{columns}[t]
-\column{0.47\linewidth}
+\column{0.46\linewidth}
 \begin{center}
 \large \underline{But unlike ROOT,}
 \end{center}
 
-OAMap performs calculations on columns in memory. ROOT only stores data on disk in columns (TBranches of TBaskets).
+OAMap performs calculations on columns in memory. ROOT {\it stores} data in columns (TBranches of TBaskets).
 
-\column{0.47\linewidth}
+\column{0.46\linewidth}
 \begin{center}
 \large \underline{But unlike Arrow,}
 \end{center}
@@ -199,8 +199,66 @@ OAMap performs calculations on columns in memory. ROOT only stores data on disk 
 OAMap performs arbitrary functions (even procedural) on object-like data, rather than a data-frame model.
 \end{columns}
 
-\vspace{0.5 cm}
+\vspace{0.7 cm}
 Unlike both, OAMap's focus is on calculation. Any software that provides arrays in the right format may be used as sources.
+\end{frame}
+
+\begin{frame}[fragile]{Example}
+\small
+\begin{minted}{python}
+>>> import uproot
+>>> import oamap.source.root   # old ROOT interface
+
+>>> url = "http://scikit-hep.org/uproot/examples/HZZ.root"
+>>> events = uproot.open(url)["events"].oamap()
+>>> events.schema.content["muons"].show()
+List(
+  starts = 'NMuon',    # schema maps object attributes to array names
+  stops = 'NMuon',     # in this case, ROOT TBranch names
+  content = Record(
+    fields = {         # at all levels of nesting
+      'px': Primitive(dtype('float32'), data='Muon_Px'),
+      'py': Primitive(dtype('float32'), data='Muon_Py'),
+      'pz': Primitive(dtype('float32'), data='Muon_Pz'),
+      'energy': Primitive(dtype('float32'), data='Muon_E'),
+      'charge': Primitive(dtype('int32'), data='Muon_Charge'),
+      'isolation': Primitive(dtype('float32'), data='Muon_Iso')
+    }))
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Example}
+\vspace{0.5 cm}
+\small
+{\normalsize The dataset ``looks and feels'' like a nested Python list.}
+\begin{minted}{python}
+>>> events
+[<Event at index 0>, <Event at index 1>, <Event at index 2>, ...,
+ <Event at index 2418>, <Event at index 2419>, <Event at index 2420>]
+
+>>> events[0].muons
+[<Muon at index 0>, <Muon at index 1>]
+
+>>> [x.px for x in events[0].muons]
+[-52.899456, 37.73778]
+\end{minted}
+
+\vspace{0.5 cm}
+{\normalsize But it is generated on demand from arrays. Here's what's loaded now:}
+\begin{verbatim}
+"NMuon":   array([2, 1, 2, ..., 1, 1, 1], dtype=int32)
+"Muon_Px": array([-52.899456,  37.73778,  -0.81645936, ...,
+                  -29.756786, 1.1418698,  23.913206  ], dtype=float32)
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Compilation with Numba}
+\vspace{0.5 cm}
+Originally, I was doing AST-to-AST transformations, replacing object references with array references, followed by calling Numba on the result. This required me to do my own type inference. Later, I embedded the objects-to-arrays transformation in the Numba compilation pass itself to gain integration with other Python types for free.
+
+\begin{center}
+\includegraphics[width=0.8\linewidth]{extending-numba.png}
+\end{center}
 \end{frame}
 
 
