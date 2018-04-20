@@ -262,12 +262,13 @@ Originally, I was doing AST-to-AST transformations, replacing object references 
 \end{frame}
 
 \begin{frame}[fragile]{Example of compiling a user function}
-\vspace{0.5 cm}
+\vspace{0.15 cm}
 \scriptsize
 \begin{minted}{python}
 >>> import numpy
 >>> import numba
 >>> import oamap.compiler
+
 >>> @numba.njit                 # declares the following function to be compiled
 ... def compute(events, out):
 ...     i = 0
@@ -283,13 +284,14 @@ Originally, I was doing AST-to-AST transformations, replacing object references 
 
 >>> out = numpy.empty(1371)
 >>> compute(events, out)        # compilation and array-fetching happen on first call
+
 >>> out
 array([90.22780609, 74.74654388, 89.75765991, ..., 92.06494904,
        85.44384003, 75.96061707])
 \end{minted}
 \end{frame}
 
-\begin{frame}[fragile]{From the compiler: typing and implementing list brackets}
+\begin{frame}[fragile]{Inside the OAMap compiler: typing and implementing list brackets}
 \vspace{0.15 cm}
 \scriptsize
 \begin{minted}{python}
@@ -319,6 +321,50 @@ def listproxy_getitem(context, builder, sig, args):
 \end{minted}
 \end{frame}
 
+\begin{frame}{Benefits of implementing OAMap in Numba}
+\vspace{0.5 cm} \large
+\begin{itemize}\setlength{\itemsep}{0.4 cm}
+\item Numba is a mature type-inferring Python compiler, feeding into LLVM.
 
+\item Numba's extension mechanism lets me write arbitrary logic to infer OAMap types and emit specialized LLVM bytecode.
+
+\item OAMap proxies can be passed into or out of any {\tt\small @numba.jit}-compiled function, like any other Python data type.
+
+\item Compilation pass over all functions called by the entry function tells me exactly which arrays need to be loaded (selective reading from ROOT).
+
+\item Low-level access to fix performance bugs, should they arise.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Future of OAMap (why the ROOT interface doesn't work now)}
+\vspace{0.4 cm}\small
+\textcolor{darkorange}{\normalsize\bf 1. OAMap objects are immutable, but users will want to edit them.}
+
+\vspace{0.3 cm}
+\textcolor{darkblue}{\normalsize Added global operations:}
+\begin{minted}{python}
+new = define(old, "pz", lambda mu: mu.pt*sinh(mu.eta), at="muons")
+\end{minted}
+to make a new version of the dataset in which every muon in every event now has a {\tt\small pz}.
+
+\vspace{0.1 cm}
+In {\tt\small new}, all arrays associated with old data (e.g.\ {\tt\small pt}, {\tt\small eta}) come from the original ROOT files and {\tt\small pz} comes from somewhere else (e.g.\ HDF5 files).
+
+\vspace{0.4 cm}
+\begin{uncoverenv}<2->
+\textcolor{darkorange}{\normalsize\bf 2. We need to enable parallel and/or remote processing.}
+
+\vspace{0.3 cm}
+\textcolor{darkblue}{\normalsize Added Spark-like handle to remote, distributed data:}
+\begin{minted}{python}
+db = DatabaseConnection("http://query-server.cern.ch")
+db.data.new = db.data.old.filter(lambda event: len(event.muons) >= 2)
+local_events = db.data.new[:10000]
+\end{minted}
+
+\vspace{0.1 cm}
+The database maintains potentially overlapping schemas and an assignment launches Dask tasks to distribute the work.
+\end{uncoverenv}
+\end{frame}
 
 \end{document}
