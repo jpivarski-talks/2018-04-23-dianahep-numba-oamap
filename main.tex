@@ -203,7 +203,7 @@ OAMap performs arbitrary functions (even procedural) on object-like data, rather
 Unlike both, OAMap's focus is on calculation. Any software that provides arrays in the right format may be used as sources.
 \end{frame}
 
-\begin{frame}[fragile]{Example}
+\begin{frame}[fragile]{Example of ROOT data as an OAMap schema}
 \small
 \begin{minted}{python}
 >>> import uproot
@@ -227,7 +227,7 @@ List(
 \end{minted}
 \end{frame}
 
-\begin{frame}[fragile]{Example}
+\begin{frame}[fragile]{Example use of OAMap proxies}
 \vspace{0.5 cm}
 \small
 {\normalsize The dataset ``looks and feels'' like a nested Python list.}
@@ -253,7 +253,7 @@ List(
 \end{frame}
 
 \begin{frame}{Compilation with Numba}
-\vspace{0.5 cm}
+\vspace{0.4 cm}
 Originally, I was doing AST-to-AST transformations, replacing object references with array references, followed by calling Numba on the result. This required me to do my own type inference. Later, I embedded the objects-to-arrays transformation in the Numba compilation pass itself to gain integration with other Python types for free.
 
 \begin{center}
@@ -261,7 +261,63 @@ Originally, I was doing AST-to-AST transformations, replacing object references 
 \end{center}
 \end{frame}
 
+\begin{frame}[fragile]{Example of compiling a user function}
+\vspace{0.5 cm}
+\scriptsize
+\begin{minted}{python}
+>>> import numpy
+>>> import numba
+>>> import oamap.compiler
+>>> @numba.njit                 # declares the following function to be compiled
+... def compute(events, out):
+...     i = 0
+...     for event in events:    # "event" and "event.muons" are a compiler fiction
+...         if len(event.muons) == 2:
+...             mu1, mu2 = event.muons[0], event.muons[1]
+...             px = mu1.px + mu2.px
+...             py = mu1.py + mu2.py
+...             pz = mu1.pz + mu2.pz
+...             energy = mu1.energy + mu2.energy
+...             out[i] = sqrt(energy**2 - px**2 - py**2 - pz**2)
+...             i += 1
 
+>>> out = numpy.empty(1371)
+>>> compute(events, out)        # compilation and array-fetching happen on first call
+>>> out
+array([90.22780609, 74.74654388, 89.75765991, ..., 92.06494904,
+       85.44384003, 75.96061707])
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{From the compiler: typing and implementing list brackets}
+\vspace{0.15 cm}
+\scriptsize
+\begin{minted}{python}
+@nb.typing.templates.infer
+class ListProxyGetItem(nb.typing.templates.AbstractTemplate):
+    key = "getitem"
+    def generic(self, args, kwds):
+       if len(args) == 2:
+          tpe, idx = args
+          if isinstance(tpe, ListProxyNumbaType) and isinstance(idx, nb.types.Integer):
+             return typeof_generator(tpe.generator.content)(tpe, idx)
+
+@nb.extending.lower_builtin("getitem", ListProxyNumbaType, nb.types.Integer)
+def listproxy_getitem(context, builder, sig, args):
+    listtpe, indextpe = sig.args; listval, indexval = args
+    listproxy = nb.cgutils.create_struct_proxy(listtpe)(context, builder, listval)
+    indexval = cast_int64(builder, indexval)
+
+    normindex_ptr = nb.cgutils.alloca_once_value(builder, indexval)
+    with builder.if_then(builder.icmp_signed("<", indexval, literal_int64(0))):
+        builder.store(builder.add(indexval, listproxy.length), normindex_ptr)
+    normindex = builder.load(normindex_ptr)
+
+    at = builder.add(listproxy.whence, builder.mul(listproxy.stride, normindex))
+    return generate(context, builder, listtpe.generator.content, listproxy.baggage,
+                    listproxy.ptrs, listproxy.lens, at)
+\end{minted}
+\end{frame}
 
 
 
