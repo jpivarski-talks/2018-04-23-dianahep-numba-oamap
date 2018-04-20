@@ -178,9 +178,33 @@ The data types and their representations have \textcolor{darkblue}{compositional
 \textcolor{darkblue}{\large Proxy objects} only need to know where they are in the schema (compile-time) and where they are in their arrays (integer index at run-time).
 \end{frame}
 
-\begin{frame}{}
+\begin{frame}{Similarity to ROOT and Apache Arrow}
+\vspace{0.5 cm}
+OAMap transformation rules deliberately resemble those of ROOT and Arrow, so that both can be used as inputs to calculations. With minor modifications, both represent nested data as described on the previous page.
 
+\vspace{-0.3 cm}
+\begin{columns}[t]
+\column{0.47\linewidth}
+\begin{center}
+\large \underline{But unlike ROOT,}
+\end{center}
+
+OAMap performs calculations on columns in memory. ROOT only stores data on disk in columns (TBranches of TBaskets).
+
+\column{0.47\linewidth}
+\begin{center}
+\large \underline{But unlike Arrow,}
+\end{center}
+
+OAMap performs arbitrary functions (even procedural) on object-like data, rather than a data-frame model.
+\end{columns}
+
+\vspace{0.5 cm}
+Unlike both, OAMap's focus is on calculation. Any software that provides arrays in the right format may be used as sources.
 \end{frame}
+
+
+
 
 
 \end{document}
